@@ -3,7 +3,7 @@
 <package format="3">
   <name>duro_gps_driver</name>
   <version>0.0.0</version>
-  <description>The duro_ros package</description>
+  <description>The duro_gps_driver is a ROS driver for the Swift Navigation GPS over the libsbp API.</description>
 
   <maintainer email="borgesjvt@gmail.com">João Victor Torres Borges</maintainer>
 
