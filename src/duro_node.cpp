@@ -12,6 +12,7 @@
 #include "std_msgs/msg/string.hpp"
 #include "std_msgs/msg/u_int8.hpp"
 #include "std_msgs/msg/u_int16.hpp"
+#include "std_msgs/msg/u_int32.hpp"
 #include "std_msgs/msg/float64.hpp"
 #include "nav_msgs/msg/odometry.hpp"
 #include "sensor_msgs/msg/nav_sat_fix.hpp"
@@ -40,6 +41,7 @@
 rclcpp::Node::SharedPtr node;
 // Publishers
 rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr navsatfix_pub;
+rclcpp::Publisher<std_msgs::msg::UInt32>::SharedPtr heading_pub;
 rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub;
 rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr imu_pub;
 rclcpp::Publisher<sensor_msgs::msg::MagneticField>::SharedPtr mag_pub;
@@ -55,6 +57,7 @@ rclcpp::Publisher<sensor_msgs::msg::TimeReference>::SharedPtr time_ref_pub;
 
 // ROS msgs
 sensor_msgs::msg::NavSatFix navsatfix_msg;
+std_msgs::msg::UInt32 heading_msg;
 nav_msgs::msg::Odometry odom_msg;
 sensor_msgs::msg::Imu imu_msg;
 sensor_msgs::msg::MagneticField mag_msg;
@@ -84,6 +87,7 @@ float z_coord_exact_height;
 
 // SBP variables
 static sbp_msg_callbacks_node_t dops_callback_node;
+static sbp_msg_callbacks_node_t heading_callback_node;
 static sbp_msg_callbacks_node_t pos_ll_callback_node;
 static sbp_msg_callbacks_node_t orientation_callback_node;
 static sbp_msg_callbacks_node_t orientation_euler_callback_node;
@@ -157,6 +161,17 @@ namespace ins_modes
     NONE = 0,
     INS_USED
   };
+}
+
+/*
+* Reads the HEADING message from the SBP API in RTK mode, which comes through the msg_baseline_heading_t variable, 
+* and publishes in a ROS topic
+*/
+void heading_callback(u16 sender_id, u8 len, u8 msg[], void *context)
+{
+  msg_baseline_heading_t *baseline_heading = (msg_baseline_heading_t *)msg;
+  heading_msg.data = baseline_heading->heading;
+  heading_pub->publish(heading_msg); 
 }
 
 /*
@@ -519,6 +534,7 @@ int main(int argc, char * argv[])
   node = rclcpp::Node::make_shared("duro_node");
 
   navsatfix_pub = node->create_publisher<sensor_msgs::msg::NavSatFix>("navsatfix", 100);
+  heading_pub = node->create_publisher<std_msgs::msg::UInt32>("heading", 100);
   odom_pub = node->create_publisher<nav_msgs::msg::Odometry>("odom", 100);
   imu_pub = node->create_publisher<sensor_msgs::msg::Imu>("imu", 100);
   mag_pub = node->create_publisher<sensor_msgs::msg::MagneticField>("mag", 100);
@@ -571,6 +587,7 @@ int main(int argc, char * argv[])
   setup_socket();
   sbp_state_init(&sbp_state);
   sbp_register_callback(&sbp_state, SBP_MSG_DOPS, dops_callback, NULL, &dops_callback_node);
+  sbp_register_callback(&sbp_state, SBP_MSG_BASELINE_HEADING, heading_callback, NULL, &heading_callback_node);
   sbp_register_callback(&sbp_state, SBP_MSG_POS_LLH, pos_ll_callback, NULL, &pos_ll_callback_node);
   sbp_register_callback(&sbp_state, SBP_MSG_ORIENT_QUAT, orientation_callback, NULL, &orientation_callback_node);
   sbp_register_callback(&sbp_state, SBP_MSG_ORIENT_EULER, orientation_euler_callback, NULL, &orientation_euler_callback_node);
