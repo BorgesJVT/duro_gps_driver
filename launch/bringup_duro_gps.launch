@@ -1,5 +1,6 @@
 <launch>
-    <node pkg="duro_gps_driver" namespace="duro" exec="duro_node" name="duro_gps_driver" output="screen">
+    <node pkg="duro_gps_driver" namespace="duro" exec="duro_gps_driver_node" 
+        name="duro_gps_driver_node" output="screen">
         <param name="ip_address" value="10.7.113.222"/>
         <param name="port" value="55555"/>
         <param name="gps_receiver_frame" value="duro"/>

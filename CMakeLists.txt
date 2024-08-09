@@ -33,8 +33,8 @@ set(ament_dependencies
   tf2_geometry_msgs
 )
 
-add_executable(duro_node 
-  src/duro_node.cpp 
+add_executable(duro_gps_driver_node 
+  src/duro_gps_driver.cpp 
   src/utm.cpp 
   src/fake_orientation.cpp
 )
@@ -44,15 +44,15 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   DEPENDENCIES std_msgs
 )
 
-rosidl_target_interfaces(duro_node ${PROJECT_NAME} "rosidl_typesupport_cpp")
+rosidl_target_interfaces(duro_gps_driver_node ${PROJECT_NAME} "rosidl_typesupport_cpp")
 
-target_link_libraries(duro_node sbp)
-ament_target_dependencies(duro_node ${ament_dependencies})
+target_link_libraries(duro_gps_driver_node sbp)
+ament_target_dependencies(duro_gps_driver_node ${ament_dependencies})
 ament_export_dependencies(rosidl_default_runtime)
 
 ## Install
 ## Mark executables and/or libraries for installation
-install(TARGETS duro_node
+install(TARGETS duro_gps_driver_node
   RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 
