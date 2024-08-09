@@ -14,7 +14,9 @@ find_package(tf2 REQUIRED)
 find_package(tf2_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
 
+link_directories("/usr/local/lib/")
 include_directories(
   include 
   "/usr/local/include"
@@ -30,12 +32,23 @@ set(ament_dependencies
   tf2_ros
   tf2_geometry_msgs
 )
-link_directories("/usr/local/lib/")
 
-add_executable(duro_node src/duro_node.cpp src/utm.cpp src/fake_orientation.cpp)
+add_executable(duro_node 
+  src/duro_node.cpp 
+  src/utm.cpp 
+  src/fake_orientation.cpp
+)
 
-ament_target_dependencies(duro_node ${ament_dependencies})
+rosidl_generate_interfaces(${PROJECT_NAME}
+  "msg/Heading.msg"
+  DEPENDENCIES std_msgs
+)
+
+rosidl_target_interfaces(duro_node ${PROJECT_NAME} "rosidl_typesupport_cpp")
+
 target_link_libraries(duro_node sbp)
+ament_target_dependencies(duro_node ${ament_dependencies})
+ament_export_dependencies(rosidl_default_runtime)
 
 ## Install
 ## Mark executables and/or libraries for installation

@@ -25,6 +25,7 @@
 #include "geometry_msgs/msg/transform_stamped.hpp"
 #include "tf2/LinearMath/Quaternion.h"
 #include "tf2_ros/transform_broadcaster.h"
+#include "duro_gps_driver/msg/heading.hpp"
 
 // libsbp - Swift Binary Protocol library headers
 #include <libsbp/sbp.h>
@@ -41,7 +42,8 @@
 rclcpp::Node::SharedPtr node;
 // Publishers
 rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr navsatfix_pub;
-rclcpp::Publisher<std_msgs::msg::UInt32>::SharedPtr heading_pub;
+// rclcpp::Publisher<std_msgs::msg::UInt32>::SharedPtr heading_pub;
+rclcpp::Publisher<duro_gps_driver::msg::Heading>::SharedPtr heading_pub;
 rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub;
 rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr imu_pub;
 rclcpp::Publisher<sensor_msgs::msg::MagneticField>::SharedPtr mag_pub;
@@ -57,7 +59,8 @@ rclcpp::Publisher<sensor_msgs::msg::TimeReference>::SharedPtr time_ref_pub;
 
 // ROS msgs
 sensor_msgs::msg::NavSatFix navsatfix_msg;
-std_msgs::msg::UInt32 heading_msg;
+// std_msgs::msg::UInt32 heading_msg;
+duro_gps_driver::msg::Heading heading_msg;
 nav_msgs::msg::Odometry odom_msg;
 sensor_msgs::msg::Imu imu_msg;
 sensor_msgs::msg::MagneticField mag_msg;
@@ -170,8 +173,11 @@ namespace ins_modes
 void heading_callback(u16 sender_id, u8 len, u8 msg[], void *context)
 {
   msg_baseline_heading_t *baseline_heading = (msg_baseline_heading_t *)msg;
-  heading_msg.data = baseline_heading->heading;
-  heading_pub->publish(heading_msg); 
+  // heading_msg.data = baseline_heading->heading;
+  // heading_pub->publish(heading_msg);
+  heading_msg.header.stamp = node->now();
+  heading_msg.heading = baseline_heading->heading;
+  heading_pub->publish(heading_msg);
 }
 
 /*
@@ -533,8 +539,9 @@ int main(int argc, char * argv[])
   rclcpp::init(argc, argv);
   node = rclcpp::Node::make_shared("duro_node");
 
-  navsatfix_pub = node->create_publisher<sensor_msgs::msg::NavSatFix>("navsatfix", 100);
-  heading_pub = node->create_publisher<std_msgs::msg::UInt32>("heading", 100);
+  navsatfix_pub = node->create_publisher<sensor_msgs::msg::NavSatFix>("gps", 100);
+  // heading_pub = node->create_publisher<std_msgs::msg::UInt32>("heading", 100);
+  heading_pub = node->create_publisher<duro_gps_driver::msg::Heading>("heading", 100);
   odom_pub = node->create_publisher<nav_msgs::msg::Odometry>("odom", 100);
   imu_pub = node->create_publisher<sensor_msgs::msg::Imu>("imu", 100);
   mag_pub = node->create_publisher<sensor_msgs::msg::MagneticField>("mag", 100);
